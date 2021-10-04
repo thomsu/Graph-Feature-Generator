@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import linalg
 
 
 class GraphInfo():
@@ -6,7 +7,7 @@ class GraphInfo():
     def __init__(self):
         self._adj_matrix = None
         self._floyd_warshall = None
-        self._degree_centrality = None
+        self._node_degree = None
         self._eigenvector_centrality = None
         self._betweenness_centrality = None
         self._closeness_centrality = None
@@ -23,17 +24,24 @@ class GraphInfo():
             self._adj_matrix[self._node_dict[start]][self._node_dict[end]] += 1
             self._adj_matrix[self._node_dict[end]][self._node_dict[start]] += 1
 
-    def degree_centrality(self):
+    def get_n_degree(self):
         if self._adj_matrix is None:
             print('No graph found. Please create graph by adding edges.')
             return
-        if self._degree_centrality:
-            return self._degree_centrality
+        if self._node_degree:
+            return self._node_degree
 
         lookup = {v: k for k, v in self._node_dict.items()}
-        self._degree_centrality = {}
+        self._node_degree = {}
 
         for i, col in enumerate(np.transpose(self._adj_matrix)):
-            self._degree_centrality[lookup[i]] = sum(col)
+            self._node_degree[lookup[i]] = sum(col)
 
-        return self._degree_centrality
+        return self._node_degree
+
+    def get_ev_centrality(self):
+        eigval, eigvec = linalg.eig(self._adj_matrix)
+        eigvec = eigvec[np.argmax(eigval)]
+
+        self._eigenvector_centrality = {n: i for n, i in zip(sorted(self._node_dict), eigvec)}
+        return self._eigenvector_centrality
