@@ -107,3 +107,29 @@ class GraphInfo():
             self._betweenness_centrality[node_list[k]] = count / total
 
         return self._betweenness_centrality
+
+    def get_close_centrality(self):
+        if self._closeness_centrality is not None:
+            return self._closeness_centrality
+
+        size = len(self._node_set)
+        node_list = list(sorted(self._node_set))
+
+        if self._shortest_paths is None:
+            self.floyd_warshall()
+
+        self._closeness_centrality = {}
+
+        for i in range(size):
+            length = 0
+            for j in range(size):
+                if i == j:
+                    continue
+                if self._shortest_paths[f'{node_list[i]}-{node_list[j]}'] is None:
+                    self._closeness_centrality[node_list[i]] = 0
+                    break
+                length += len(self._shortest_paths[f'{node_list[i]}-{node_list[j]}']) - 1
+            else:
+                self._closeness_centrality[node_list[i]] = 1 / length
+
+        return self._closeness_centrality
