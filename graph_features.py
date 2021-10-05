@@ -1,5 +1,6 @@
 import numpy as np
 from numpy import linalg
+from collections import Counter
 
 
 class GraphInfo():
@@ -21,8 +22,8 @@ class GraphInfo():
         self._adj_matrix = np.full((size, size), np.zeros(size))
 
         for start, end in edges:
-            self._adj_matrix[self._node_dict[start]][self._node_dict[end]] += 1
-            self._adj_matrix[self._node_dict[end]][self._node_dict[start]] += 1
+            self._adj_matrix[self._node_dict[start]][self._node_dict[end]] = 1
+            self._adj_matrix[self._node_dict[end]][self._node_dict[start]] = 1
 
     def get_n_degree(self):
         if self._adj_matrix is None:
@@ -138,6 +139,10 @@ class GraphInfo():
         if beta is None:
             beta = 0.7
 
+        if beta <= 0 or beta >= 1:
+            print('beta should be between 0 and 1 exclusive.')
+            return
+
         size = len(self._node_set)
         node_list = list(sorted(self._node_set))
 
@@ -149,3 +154,36 @@ class GraphInfo():
                 self._katz_index[f'{node_list[i]}-{node_list[j]}'] = katz_matrix[i][j]
 
         return self._katz_index
+
+    def get_col_refinement(self, step=None):
+        if step is None:
+            step = 3
+
+        if step < 2:
+            print('step should be an integer greater than 1.')
+            return
+
+        size = len(self._node_set)
+        adj_list = [[] for _ in range(size)]
+
+        for j in range(size):
+            for i in range(size):
+                if self._adj_matrix[i][j] > 0:
+                    adj_list[j].append(i)
+
+        prev, k = [1] * size, 1
+        self._color_refinement = Counter()
+        self._color_refinement[(0, 1)] += size
+
+        while k < step:
+            curr = [0] * size
+            for node in range(size):
+                for neigbr in adj_list[node]:
+                    curr[node] += prev[neigbr]
+
+            for i in range(size):
+                self._color_refinement[(prev[i], curr[i])] += 1
+            prev = curr
+            k += 1
+
+        return self._color_refinement
