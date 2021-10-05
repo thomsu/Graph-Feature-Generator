@@ -133,3 +133,19 @@ class GraphInfo():
                 self._closeness_centrality[node_list[i]] = 1 / length
 
         return self._closeness_centrality
+
+    def get_katz_index(self, beta=None):
+        if beta is None:
+            beta = 0.7
+
+        size = len(self._node_set)
+        node_list = list(sorted(self._node_set))
+
+        katz_matrix = linalg.inv(np.identity(size)-beta*self._adj_matrix) - np.identity(size)
+        self._katz_index = {}
+
+        for i in range(size):
+            for j in range(size):
+                self._katz_index[f'{node_list[i]}-{node_list[j]}'] = katz_matrix[i][j]
+
+        return self._katz_index
