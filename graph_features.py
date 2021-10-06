@@ -183,7 +183,7 @@ class GraphInfo():
 
             for i in range(size):
                 self._color_refinement[(prev[i], curr[i])] += 1
-            prev = curr
+            prev = [prev[i]+curr[i] for i in range(size)]
             k += 1
 
         return self._color_refinement
